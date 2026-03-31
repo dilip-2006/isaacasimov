@@ -47,7 +47,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     setCapturedImage(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } // Try to favor rear cameras on mobile if applicable
+        video: true // Use default camera to prevent OverconstrainedError on desktops
       });
       streamRef.current = stream;
       if (videoRef.current) {
