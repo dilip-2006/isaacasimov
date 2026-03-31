@@ -45,6 +45,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   const startCamera = async () => {
     setError(null);
     setCapturedImage(null);
+    setIsActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: true // Use default camera to prevent OverconstrainedError on desktops
@@ -53,12 +54,18 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      setIsActive(true);
     } catch (err: any) {
       console.error("Camera access error:", err);
       setError("Could not access camera. Please check permissions.");
+      setIsActive(false);
     }
   };
+
+  useEffect(() => {
+    if (isActive && videoRef.current && streamRef.current && videoRef.current.srcObject !== streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isActive]);
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
