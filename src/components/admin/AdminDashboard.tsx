@@ -3,48 +3,28 @@ import { motion } from 'framer-motion';
 import { 
   BarChart3, 
   Package, 
-  Users, 
   Clock, 
-  CheckSquare, 
-  AlertTriangle,
   RotateCcw,
   TrendingUp,
-  Activity,
   FileSpreadsheet,
   Eye,
   PlusCircle
 } from 'lucide-react';
-import { dataService } from '../../services/dataService';
-import { BorrowRequest, Component, SystemStats } from '../../types';
 import RequestManagement from './RequestManagement';
 import InventoryManagement from './InventoryManagement';
 import BorrowHistory from './BorrowHistory';
 import ReturnManagement from './ReturnManagement';
-import UserAnalytics from './UserAnalytics';
 import ExportPreviewModal from './ExportPreviewModal';
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showExportPreview, setShowExportPreview] = useState(false);
-  const [stats, setStats] = useState<SystemStats>({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalLogins: 0,
-    onlineUsers: 0,
-    totalRequests: 0,
-    pendingRequests: 0,
-    totalComponents: 0,
-    overdueItems: 0
-  });
-
   useEffect(() => {
-    loadStats();
-    const interval = setInterval(loadStats, 30000); // Update every 30 seconds
-    return () => clearInterval(interval);
+    // Keep interval structure if we need to poll other things later
   }, []);
 
   const loadStats = () => {
-    setStats(dataService.getSystemStats());
+    // Dashboard stats are no longer displayed
   };
 
   const tabs = [
@@ -52,7 +32,6 @@ const AdminDashboard: React.FC = () => {
     { id: 'requests', label: 'Issue Component', icon: PlusCircle, color: 'from-yellow-500 to-orange-500' },
     { id: 'returns', label: 'Returns', icon: RotateCcw, color: 'from-green-500 to-emerald-500' },
     { id: 'inventory', label: 'Inventory', icon: Package, color: 'from-purple-500 to-pink-500' },
-    { id: 'analytics', label: 'User Analytics', icon: Activity, color: 'from-indigo-500 to-purple-500' },
     { id: 'history', label: 'History', icon: Clock, color: 'from-indigo-500 to-blue-500' },
   ];
 
@@ -64,8 +43,6 @@ const AdminDashboard: React.FC = () => {
         return <ReturnManagement onUpdate={loadStats} />;
       case 'inventory':
         return <InventoryManagement />;
-      case 'analytics':
-        return <UserAnalytics />;
       case 'history':
         return <BorrowHistory />;
       default:
@@ -99,79 +76,6 @@ const AdminDashboard: React.FC = () => {
           </motion.div>
         </div>
       </motion.div>
-
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-        {[
-          { 
-            title: 'Total Users', 
-            value: stats.totalUsers, 
-            icon: Users, 
-            color: 'from-blue-500 to-cyan-500',
-            bgColor: 'bg-blue-500/10',
-            borderColor: 'border-blue-500/30',
-            subtitle: `${stats.activeUsers} active`
-          },
-          { 
-            title: 'Total Logins', 
-            value: stats.totalLogins, 
-            icon: Activity, 
-            color: 'from-green-500 to-emerald-500',
-            bgColor: 'bg-green-500/10',
-            borderColor: 'border-green-500/30',
-            subtitle: `${stats.onlineUsers} online now`
-          },
-          { 
-            title: 'Components Issued', 
-            value: stats.totalRequests, 
-            icon: PlusCircle, 
-            color: 'from-yellow-500 to-orange-500',
-            bgColor: 'bg-yellow-500/10',
-            borderColor: 'border-yellow-500/30',
-            subtitle: `${stats.pendingRequests} pending returns`
-          },
-          { 
-            title: 'Total Components', 
-            value: stats.totalComponents, 
-            icon: Package, 
-            color: 'from-peacock-500 to-blue-500',
-            bgColor: 'bg-peacock-500/10',
-            borderColor: 'border-peacock-500/30',
-            subtitle: `${stats.overdueItems} overdue`
-          }
-        ].map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-              className={`relative overflow-hidden ${stat.bgColor} backdrop-blur-xl rounded-xl sm:rounded-2xl border ${stat.borderColor} p-3 sm:p-6 group hover:shadow-2xl transition-all duration-300`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-2 sm:mb-4">
-                  <div className={`p-2 sm:p-3 bg-gradient-to-br ${stat.color} rounded-lg sm:rounded-xl shadow-lg group-hover:animate-pulse`}>
-                    <Icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 + 0.3 }}
-                    className="text-right"
-                  >
-                    <p className="text-lg sm:text-3xl font-bold text-white">{stat.value}</p>
-                    <p className="text-peacock-300 text-xs sm:text-sm">{stat.subtitle}</p>
-                  </motion.div>
-                </div>
-                <h3 className="text-peacock-200 font-medium text-xs sm:text-base">{stat.title}</h3>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
 
       {/* Export Section */}
       <motion.div
