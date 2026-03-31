@@ -94,11 +94,11 @@ const BorrowHistory: React.FC = () => {
               <tr>
                 <th className="text-left p-4 text-peacock-300 font-medium">Student</th>
                 <th className="text-left p-4 text-peacock-300 font-medium">Component</th>
-                <th className="text-left p-4 text-peacock-300 font-medium">Quantity</th>
-                <th className="text-left p-4 text-peacock-300 font-medium">Request Date</th>
+                <th className="text-left p-4 text-peacock-300 font-medium">Qty</th>
+                <th className="text-left p-4 text-peacock-300 font-medium">Issue Date</th>
                 <th className="text-left p-4 text-peacock-300 font-medium">Due Date</th>
                 <th className="text-left p-4 text-peacock-300 font-medium">Status</th>
-                <th className="text-left p-4 text-peacock-300 font-medium">Action Date</th>
+                <th className="text-left p-4 text-peacock-300 font-medium">Photos</th>
               </tr>
             </thead>
             <tbody>
@@ -116,6 +116,9 @@ const BorrowHistory: React.FC = () => {
                       <div>
                         <p className="text-white font-medium">{request.studentName}</p>
                         <p className="text-peacock-300 text-sm">{request.rollNo}</p>
+                        {request.department && (
+                          <p className="text-peacock-400 text-xs">{request.department}</p>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -132,10 +135,36 @@ const BorrowHistory: React.FC = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
                       {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                     </span>
+                    {request.returnedAt && (
+                      <p className="text-peacock-400 text-xs mt-1">{new Date(request.returnedAt).toLocaleDateString()}</p>
+                    )}
                   </td>
-                  <td className="p-4 text-white text-sm">
-                    {request.approvedAt && new Date(request.approvedAt).toLocaleDateString()}
-                    {request.returnedAt && new Date(request.returnedAt).toLocaleDateString()}
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      {request.issueImage && (
+                        <a href={request.issueImage} target="_blank" rel="noopener noreferrer" title="Issue Photo">
+                          <img
+                            src={request.issueImage}
+                            alt="Issue"
+                            className="w-12 h-12 object-cover rounded-lg border border-peacock-500/40 hover:border-peacock-400 transition-colors cursor-pointer"
+                          />
+                          <p className="text-peacock-400 text-xs text-center mt-0.5">Issue</p>
+                        </a>
+                      )}
+                      {request.returnImage && (
+                        <a href={request.returnImage} target="_blank" rel="noopener noreferrer" title="Return Photo">
+                          <img
+                            src={request.returnImage}
+                            alt="Return"
+                            className="w-12 h-12 object-cover rounded-lg border border-green-500/40 hover:border-green-400 transition-colors cursor-pointer"
+                          />
+                          <p className="text-green-400 text-xs text-center mt-0.5">Return</p>
+                        </a>
+                      )}
+                      {!request.issueImage && !request.returnImage && (
+                        <span className="text-dark-500 text-xs">—</span>
+                      )}
+                    </div>
                   </td>
                 </motion.tr>
               ))}
