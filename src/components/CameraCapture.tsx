@@ -20,6 +20,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   const [isActive, setIsActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(previewImage);
   const [error, setError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
 
   // Clean up media stream when component unmounts or stops
   const stopStream = useCallback(() => {
@@ -42,13 +43,16 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     }
   }, [previewImage]);
 
-  const startCamera = async () => {
+  const startCamera = async (mode: "environment" | "user" = facingMode) => {
     setError(null);
     setCapturedImage(null);
     setIsActive(true);
+    
+    stopStream();
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true // Use default camera to prevent OverconstrainedError on desktops
+        video: { facingMode: mode }
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -56,8 +60,19 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       }
     } catch (err: any) {
       console.error("Camera access error:", err);
-      setError("Could not access camera. Please check permissions.");
-      setIsActive(false);
+      // Fallback to default if facingMode fails
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true
+        });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (fallbackErr) {
+        setError("Could not access camera. Please check permissions.");
+        setIsActive(false);
+      }
     }
   };
 
@@ -66,6 +81,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       videoRef.current.srcObject = streamRef.current;
     }
   }, [isActive]);
+
+  const toggleCamera = () => {
+    const newMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newMode);
+    startCamera(newMode);
+  };
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
@@ -154,7 +175,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
             muted
             className="w-full h-full object-cover"
           />
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4">
             <button
               type="button"
               onClick={cancelCapture}
@@ -171,6 +192,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
                 <div className="w-6 h-6 bg-white rounded-full"></div>
               </div>
             </button>
+            <button
+              type="button"
+              onClick={toggleCamera}
+              className="p-3 bg-dark-700/80 hover:bg-dark-600 text-white rounded-full backdrop-blur-sm shadow-xl transition-transform hover:scale-105 active:scale-95"
+            >
+              <RefreshCw className="w-6 h-6" />
+            </button>
           </div>
         </motion.div>
       )}
@@ -179,7 +207,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
       {!isActive && !capturedImage && (
         <button
           type="button"
-          onClick={startCamera}
+          onClick={() => startCamera()}
           className="w-full max-w-sm flex items-center justify-center gap-2 py-4 border-2 border-dashed border-dark-600 rounded-xl text-dark-400 hover:text-peacock-400 hover:border-peacock-500/50 hover:bg-peacock-500/5 transition-all duration-300 group"
         >
           <div className="p-3 bg-dark-700 rounded-lg group-hover:bg-peacock-500/20 group-hover:text-peacock-400 transition-colors">
