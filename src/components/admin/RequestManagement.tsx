@@ -17,7 +17,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({ onUpdate }) => {
   const [rollNo, setRollNo] = useState('');
   const [mobile, setMobile] = useState('');
   const [year, setYear] = useState('1st Year');
-  const [department, setDepartment] = useState('CSE');
+  const [department, setDepartment] = useState('RA');
   const [componentId, setComponentId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [dueDate, setDueDate] = useState('');
@@ -229,6 +229,7 @@ const RequestManagement: React.FC<RequestManagementProps> = ({ onUpdate }) => {
                     onChange={(e) => setDepartment(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 bg-dark-700/50 border border-dark-600 rounded-xl text-white focus:border-peacock-500 focus:ring-1 focus:ring-peacock-500 appearance-none"
                   >
+                    <option>RA</option>
                     <option>CSE</option>
                     <option>ECE</option>
                     <option>EEE</option>

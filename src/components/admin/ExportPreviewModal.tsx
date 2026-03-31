@@ -53,14 +53,14 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({ isOpen, onClose
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-50"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="bg-dark-800 rounded-3xl border border-peacock-500/20 w-full max-w-7xl max-h-[90vh] overflow-hidden shadow-2xl"
+          className="bg-dark-800 rounded-t-3xl sm:rounded-3xl border border-peacock-500/20 w-full max-w-7xl h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-peacock-500/10 to-blue-500/10 border-b border-peacock-500/20 p-6">
@@ -74,17 +74,26 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({ isOpen, onClose
                   <p className="text-peacock-300">Comprehensive lab management analytics with 8 detailed sheets</p>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="p-2 text-peacock-400 hover:text-white hover:bg-dark-700/50 rounded-lg transition-all duration-200"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownloadExcel}
+                  className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 sm:px-5 py-2 rounded-xl font-semibold text-sm shadow-lg transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </button>
+                <button
+                  onClick={onClose}
+                  className="p-2 text-peacock-400 hover:text-white hover:bg-dark-700/50 rounded-lg transition-all duration-200"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-peacock-500"></div>
@@ -184,7 +193,7 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({ isOpen, onClose
                           </tr>
                         </thead>
                         <tbody>
-                          {previewData.detailedComponents.slice(0, 8).map((component: any, index: number) => {
+                          {previewData.detailedComponents.slice(0, 8).map((component: any) => {
                             const utilizationPercent = parseFloat(component.utilization);
                             const getStatusIcon = () => {
                               if (component.available === 0) return <AlertTriangle className="w-4 h-4 text-red-400" />;
@@ -276,12 +285,12 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({ isOpen, onClose
                           </tr>
                         </thead>
                         <tbody>
-                          {previewData.checkedOutSummary.slice(0, 6).map((item: any, index: number) => {
+                          {previewData.checkedOutSummary.slice(0, 6).map((item: any) => {
                             const isOverdue = item.daysRemaining < 0;
                             const isDueSoon = item.daysRemaining <= 3 && item.daysRemaining >= 0;
 
                             return (
-                              <tr key={index} className="border-t border-dark-600">
+                              <tr key={`${item.studentName}-${item.componentName}`} className="border-t border-dark-600">
                                 <td className="p-3 text-white">{item.studentName}</td>
                                 <td className="p-3 text-white">{item.rollNo}</td>
                                 <td className="p-3 text-white">{item.componentName}</td>
@@ -443,39 +452,6 @@ const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({ isOpen, onClose
                 </div>
               </div>
             ) : null}
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-peacock-500/20 p-6 bg-dark-700/30">
-            <div className="flex items-center justify-between">
-              <div className="text-peacock-300 text-sm">
-                <p className="font-semibold">Isaac Asimov Robotics Lab Management System</p>
-                <p>Professional Excel Report • Generated on {new Date().toLocaleString()}</p>
-                <p className="text-xs mt-1">8 comprehensive sheets with detailed analytics and tracking</p>
-              </div>
-              <div className="flex gap-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={onClose}
-                  className="px-6 py-3 bg-dark-600 text-white rounded-xl font-medium hover:bg-dark-500 transition-all duration-200"
-                >
-                  Cancel
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(0, 206, 209, 0.3)' }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleDownloadExcel}
-                  className="group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 flex items-center gap-3">
-                    <Download className="w-5 h-5 group-hover:animate-bounce" />
-                    Download Professional Excel Report
-                  </div>
-                </motion.button>
-              </div>
-            </div>
           </div>
         </motion.div>
       </motion.div>
