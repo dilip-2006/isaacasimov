@@ -14,7 +14,7 @@ class DataService {
         {
           id: 'admin-1',
           name: 'Administrator',
-          email: 'admin@issacasimov.in',
+          email: 'admin@isaacasimov.in',
           role: 'admin',
           registeredAt: new Date().toISOString(),
           loginCount: 0,
@@ -115,7 +115,7 @@ class DataService {
     let user = this.getUser(email);
     
     // Handle admin login with default password
-    if (email === 'admin@issacasimov.in') {
+    if (email === 'admin@isaacasimov.in') {
       const passwords = this.getUserPasswords();
       const adminPassword = passwords[email] || 'ralab'; // Default admin password
       if (password !== adminPassword) {
@@ -127,7 +127,7 @@ class DataService {
         user = {
           id: 'admin-1',
           name: 'Administrator',
-          email: 'admin@issacasimov.in',
+          email: 'admin@isaacasimov.in',
           role: 'admin',
           registeredAt: new Date().toISOString(),
           loginCount: 0,

@@ -22,10 +22,12 @@ export interface Component {
 
 export interface BorrowRequest {
   id: string;
-  studentId: string;
+  studentId?: string;
   studentName: string;
   rollNo: string;
   mobile: string;
+  year: string;
+  department: string;
   componentId: string;
   componentName: string;
   quantity: number;
@@ -36,6 +38,8 @@ export interface BorrowRequest {
   approvedAt?: string;
   returnedAt?: string;
   notes?: string;
+  issueImage?: string;
+  returnImage?: string;
 }
 
 export interface Notification {

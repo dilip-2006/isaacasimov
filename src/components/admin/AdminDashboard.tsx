@@ -11,7 +11,8 @@ import {
   TrendingUp,
   Activity,
   FileSpreadsheet,
-  Eye
+  Eye,
+  PlusCircle
 } from 'lucide-react';
 import { dataService } from '../../services/dataService';
 import { BorrowRequest, Component, SystemStats } from '../../types';
@@ -48,7 +49,7 @@ const AdminDashboard: React.FC = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3, color: 'from-blue-500 to-cyan-500' },
-    { id: 'requests', label: 'Requests', icon: CheckSquare, color: 'from-yellow-500 to-orange-500' },
+    { id: 'requests', label: 'Issue Component', icon: PlusCircle, color: 'from-yellow-500 to-orange-500' },
     { id: 'returns', label: 'Returns', icon: RotateCcw, color: 'from-green-500 to-emerald-500' },
     { id: 'inventory', label: 'Inventory', icon: Package, color: 'from-purple-500 to-pink-500' },
     { id: 'analytics', label: 'User Analytics', icon: Activity, color: 'from-indigo-500 to-purple-500' },
@@ -121,13 +122,13 @@ const AdminDashboard: React.FC = () => {
             subtitle: `${stats.onlineUsers} online now`
           },
           { 
-            title: 'Pending Requests', 
-            value: stats.pendingRequests, 
-            icon: Clock, 
+            title: 'Components Issued', 
+            value: stats.totalRequests, 
+            icon: PlusCircle, 
             color: 'from-yellow-500 to-orange-500',
             bgColor: 'bg-yellow-500/10',
             borderColor: 'border-yellow-500/30',
-            subtitle: `${stats.totalRequests} total`
+            subtitle: `${stats.pendingRequests} pending returns`
           },
           { 
             title: 'Total Components', 

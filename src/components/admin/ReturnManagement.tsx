@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Package, User, Calendar, CheckCircle, Search, Filter } from 'lucide-react';
 import { dataService } from '../../services/dataService';
+import { smsService } from '../../services/smsService';
 import { BorrowRequest } from '../../types';
+import { CameraCapture } from '../CameraCapture';
 
 interface ReturnManagementProps {
   onUpdate: () => void;
@@ -12,6 +14,8 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ onUpdate }) => {
   const [approvedItems, setApprovedItems] = useState<BorrowRequest[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'dueDate' | 'studentName' | 'componentName'>('dueDate');
+  const [returningItemId, setReturningItemId] = useState<string | null>(null);
+  const [returnImage, setReturnImage] = useState<string | null>(null);
 
   useEffect(() => {
     loadApprovedItems();
@@ -23,7 +27,9 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ onUpdate }) => {
     setApprovedItems(approved.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
   };
 
-  const handleReturn = (request: BorrowRequest) => {
+  const handleReturn = async (request: BorrowRequest) => {
+    if (!returnImage) return;
+
     const components = dataService.getComponents();
     const component = components.find(c => c.id === request.componentId);
     
@@ -36,20 +42,21 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ onUpdate }) => {
       ...request,
       status: 'returned' as const,
       returnedAt: new Date().toISOString(),
+      returnImage: returnImage
     };
     dataService.updateRequest(updatedRequest);
+    
+    // Send simulated SMS
+    try {
+      const message = `Isaac Asimov Robotics Lab: Your return of ${request.componentName} has been processed successfully. Thank you!`;
+      await smsService.sendSMS(request.mobile, message);
+      alert(`Simulated: SMS sent to ${request.mobile}!\n\nMessage: ${message}`);
+    } catch (e) {
+      console.error("Failed to send SMS", e);
+    }
 
-    // Add notification for student
-    dataService.addNotification({
-      id: `notif-${Date.now()}`,
-      userId: request.studentId,
-      title: 'Item Returned Successfully',
-      message: `Your return of ${request.componentName} x${request.quantity} has been confirmed. Thank you for using Isaac Asimov Robotics Lab!`,
-      type: 'success',
-      read: false,
-      createdAt: new Date().toISOString(),
-    });
-
+    setReturningItemId(null);
+    setReturnImage(null);
     loadApprovedItems();
     onUpdate();
   };
@@ -206,7 +213,7 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ onUpdate }) => {
                         <div>
                           <p className="text-peacock-300">Student</p>
                           <p className="text-white font-semibold">{item.studentName}</p>
-                          <p className="text-peacock-300 text-xs">Roll: {item.rollNo}</p>
+                          <p className="text-peacock-300 text-xs">{item.rollNo} • {item.year || 'N/A'} • {item.department || 'N/A'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -228,17 +235,17 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ onUpdate }) => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-3">
+                  <div className="flex flex-col items-end gap-3 mt-4 lg:mt-0">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => handleReturn(item)}
+                      onClick={() => setReturningItemId(item.id)}
                       className="group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="relative z-10 flex items-center gap-2">
                         <CheckCircle className="w-5 h-5" />
-                        Mark as Returned
+                        Initiate Return
                       </div>
                     </motion.button>
                   </div>
@@ -269,6 +276,73 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ onUpdate }) => {
           </p>
         </motion.div>
       )}
+
+      {/* Return Verification Modal */}
+      <AnimatePresence>
+        {returningItemId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 overflow-y-auto">
+                {(() => {
+                  const item = approvedItems.find(i => i.id === returningItemId);
+                  if (!item) return null;
+
+                  return (
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center border-b border-dark-700 pb-4">
+                        <div>
+                          <h4 className="text-xl text-white font-bold">Return Verification</h4>
+                          <p className="text-peacock-300 text-sm mt-1">{item.componentName}</p>
+                        </div>
+                        <button 
+                          onClick={() => { setReturningItemId(null); setReturnImage(null); }}
+                          className="p-2 text-dark-400 hover:text-white bg-dark-700 rounded-xl transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+
+                      {item.issueImage && (
+                        <div>
+                          <h5 className="text-sm font-medium text-peacock-400 mb-2">Original Issue Photo</h5>
+                          <img src={item.issueImage} alt="Issue Verification" className="w-full h-40 object-cover rounded-xl border border-dark-600" />
+                        </div>
+                      )}
+
+                      <div className="bg-dark-900/50 p-4 rounded-xl border border-dark-700">
+                        <CameraCapture 
+                          onCapture={(img) => setReturnImage(img)} 
+                          label="Take Return Photo"
+                          previewImage={returnImage}
+                        />
+                      </div>
+
+                      <button
+                        disabled={!returnImage}
+                        onClick={() => handleReturn(item)}
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-dark-600 disabled:to-dark-700 disabled:text-dark-500 text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg transition-all duration-300"
+                      >
+                        <CheckCircle className="w-6 h-6" />
+                        Confirm Return
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

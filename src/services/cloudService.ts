@@ -8,9 +8,9 @@ interface CloudConfig {
 
 class CloudService {
   private config: CloudConfig = {
-    adminEmail: 'admin@issacasimov.in',
+    adminEmail: 'admin@isaacasimov.in',
     syncInterval: 30000, // 30 seconds
-    apiEndpoint: 'https://api.issacasimov.in' // This would be your actual API endpoint
+    apiEndpoint: 'https://api.isaacasimov.in' // This would be your actual API endpoint
   };
 
   private syncTimer: NodeJS.Timeout | null = null;
@@ -167,7 +167,7 @@ class CloudService {
         {
           id: 'admin-1',
           name: 'Administrator',
-          email: 'admin@issacasimov.in',
+          email: 'admin@isaacasimov.in',
           role: 'admin',
           registeredAt: new Date().toISOString(),
         }
